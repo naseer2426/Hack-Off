@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: "Ubuntu Mono", monospace;
+}
+
+@font-face {
+  font-family: Hacked;
+  src: url("./Resource/hacked-font/Hacked-KerX.ttf");
+}
