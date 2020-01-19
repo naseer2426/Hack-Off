@@ -127,9 +127,32 @@ class FindPlayer extends Component {
                 <div>
                   <Row>
                     <Container className="text-center">
-                      <p style={{ color: "white" }}>
-                        Waiting for your friend to join
-                      </p>
+                      <Row>
+                        <Container
+                          style={{ color: "white" }}
+                          className="text-center"
+                        >
+                          Waiting for your friend to join
+                        </Container>
+                      </Row>
+                      <Row>
+                        <Container
+                          style={{ color: "white" }}
+                          className="text-center"
+                        >
+                          <h6>Tips:</h6>
+                          {
+                            [
+                              "Hard questions give more moves but easy questions, can be solved quicker",
+                              "One hard question and you win",
+                              "Find me at github.com/ABHINAV112",
+                              "You will only be able to play if you solve a problem",
+                              "Easy questions give you 1 move, hard questions give 3 and medium 2",
+                              "While solving the questions there is only one input test case, read it in using stdin methods across each language"
+                            ][Math.floor(Math.random() * 6)]
+                          }
+                        </Container>
+                      </Row>
                     </Container>
                   </Row>
                   <Row>
