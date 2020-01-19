@@ -1,16 +1,17 @@
 import React, { Component } from "react";
 // import "../../Main.css";
 import { Row, Container, Button, Spinner } from "react-bootstrap";
+import io from "socket.io-client";
 import { Background } from "../components/Components";
 import { Redirect } from "react-router-dom";
 
 class Home extends Component {
   constructor(props) {
     super(props);
+
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
 
     this.state = {
-      playerId: "67094798ad7s097adf9ad0f",
       redirect: false,
       idStyle: {
         color: "white",
@@ -21,7 +22,7 @@ class Home extends Component {
         fontSize: "2rem",
         borderColor: "white"
       },
-      loading: false,
+      loading: true,
       heading: {
         color: "white",
         fontSize: "8rem",
@@ -33,6 +34,15 @@ class Home extends Component {
   componentDidMount = () => {
     this.updateWindowDimensions();
     window.addEventListener("resize", this.updateWindowDimensions);
+    var socket = io.connect("https://mysterious-citadel-29505.herokuapp.com/");
+    socket.on("connect", () => {
+      this.setState({
+        socket: socket,
+        loading: false,
+        playerId: socket.id
+      });
+      localStorage.setItem("HackOffSocket", String(socket));
+    });
   };
   componentWillUnmount = () => {
     window.removeEventListener("resize", this.updateWindowDimensions);
@@ -46,7 +56,6 @@ class Home extends Component {
     });
   };
   render() {
-    console.log("width", this.state.width);
     return (
       <Background>
         <Container>
@@ -94,7 +103,16 @@ class Home extends Component {
                 </Row>
               ]}
         </Container>
-        {this.state.redirect ? <Redirect to="./findPlayer" /> : ""}
+        {this.state.redirect ? (
+          <Redirect
+            to={{
+              pathname: "./findPlayer",
+              socket: this.state.socket
+            }}
+          />
+        ) : (
+          ""
+        )}
       </Background>
     );
   }

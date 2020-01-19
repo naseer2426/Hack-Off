@@ -11,14 +11,24 @@ import {
   withRouter
 } from "react-router-dom";
 
-const routing = (
-  <Router>
-    <Switch>
-      <Route exact path="/" component={withRouter(Home)} />
-      <Route path="/findPlayer" component={withRouter(FindPlayer)} />
-      <Route path="/game" component={withRouter(Game)} />
-    </Switch>
-  </Router>
-);
-ReactDOM.render(routing, document.getElementById("root"));
+class Routing extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {};
+  }
+
+  render() {
+    return (
+      <Router>
+        <Switch>
+          <Route exact path="/" component={withRouter(Home)} />
+          <Route path="/findPlayer" component={withRouter(FindPlayer)} />
+          <Route path="/game" component={withRouter(Game)} />
+        </Switch>
+      </Router>
+    );
+  }
+}
+
+ReactDOM.render(<Routing />, document.getElementById("root"));
 registerServiceWorker();

@@ -15,13 +15,18 @@ class TextEditor extends PureComponent {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      mode: "python"
+    };
   }
   modeSelector = () => {
-    let mode = this.props.mode;
+    let mode = this.props.mode.toLowerCase();
     if (mode === "C" || mode === "C++") {
       mode = "java";
     }
+    this.setState({
+      mode: mode
+    });
   };
   onChange = value => {
     this.props.setCode(value);
@@ -29,9 +34,8 @@ class TextEditor extends PureComponent {
   render() {
     return (
       <AceEditor
-        mode={this.props.mode}
+        mode={this.state.mode}
         theme="twilight"
-        onChange={this.onChange}
         name="UNIQUE_ID_OF_DIV"
         fontSize={15}
         showPrintMargin={true}

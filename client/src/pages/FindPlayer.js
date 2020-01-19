@@ -6,15 +6,24 @@ import { Redirect } from "react-router-dom";
 class FindPlayer extends Component {
   constructor(props) {
     super(props);
+    let socket = "";
+    var redirectHome = false;
+    if (props.location.socket) {
+      socket = props.location.socket;
+    } else {
+      redirectHome = true;
+    }
 
     this.state = {
       error: false,
-      playerId: "67094798ad7s097adf9ad0f",
+      playerId: socket.id,
+      redirectHome: redirectHome,
+      socket: socket,
       findContainer: {
         color: "white",
         fontSize: "2rem"
       },
-      redirect: false,
+      redirectNext: false,
       loading: false,
       inputTag: {
         color: "white",
@@ -32,6 +41,7 @@ class FindPlayer extends Component {
       }
     };
   }
+
   componentDidMount = () => {
     this.updateWindowDimensions();
     window.addEventListener("resize", this.updateWindowDimensions);
@@ -49,9 +59,9 @@ class FindPlayer extends Component {
     this.setState({
       error: false
     });
-    let inputValue = this.inputRef.current.value;
+    let player2 = this.inputRef.current.value;
     let valid = true;
-    if (inputValue.length !== 20) {
+    if (player2.length !== 20) {
       valid = false;
       this.setState({
         error: "User id not long enough"
@@ -61,16 +71,34 @@ class FindPlayer extends Component {
       this.setState({
         loading: true
       });
+      this.state.socket.emit("join_request", {
+        requested: player2,
+        requester: this.state.socket.id
+      });
+      this.state.socket.on("join_request_response", data => {
+        if (data.status === "Ready") {
+          this.setState({
+            redirectNext: true,
+            playerCharacter: data.move,
+            gameId: data.gameId
+          });
+        }
+      });
     }
   };
   cancelFinding = () => {
-    this.setState({
-      loading: false
+    this.state.socket.emit("cancel_wait", "");
+    this.state.socket.on("cancel_wait_response", data => {
+      this.setState({
+        loading: false
+      });
     });
   };
   render() {
+    // console.log("state", this.state);
     return (
       <Background>
+        {this.state.redirectHome ? <Redirect to="./" /> : ""}
         <Navbar playerId={this.state.playerId} />
         <Container>
           <Row style={{ height: this.state.height * 0.2 }} />
@@ -140,7 +168,18 @@ class FindPlayer extends Component {
             </Container>
           </Row>
         </Container>
-        {this.state.redirect ? <Redirect to="/game" /> : ""}
+        {this.state.redirectNext ? (
+          <Redirect
+            to={{
+              pathname: "/game",
+              socket: this.state.socket,
+              gameId: this.state.gameId,
+              playerCharacter: this.state.playerCharacter
+            }}
+          />
+        ) : (
+          ""
+        )}
       </Background>
     );
   }
