@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Container, Row, Col } from "react-bootstrap";
+import { Button, Container, Row } from "react-bootstrap";
 
 var globalStyles = {
   customButton: {
@@ -29,10 +29,12 @@ function Square(props) {
 class Board extends React.Component {
   renderSquare(i) {
     return (
+      // <Container className="text-center">
       <Square
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
       />
+      // </Container>
     );
   }
 
@@ -90,9 +92,9 @@ class TicTacToe extends React.Component {
         squares[a] === squares[b] &&
         squares[a] === squares[c]
       ) {
-        if (squares[a] == this.props.player) {
+        if (squares[a] === this.props.player) {
           this.props.setWinStatus("win");
-        } else if (squares[a] != this.props.player) {
+        } else if (squares[a] !== this.props.player) {
           this.props.setWinStatus("lose");
         }
 
@@ -114,6 +116,7 @@ class TicTacToe extends React.Component {
       stepNumber: this.state.stepNumber + 1
     });
     this.props.decrementCount();
+
     this.props.setGlobalBoardState(temp);
   }
   selectOnClick = () => {

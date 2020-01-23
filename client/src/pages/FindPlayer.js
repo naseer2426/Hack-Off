@@ -95,7 +95,6 @@ class FindPlayer extends Component {
     });
   };
   render() {
-    // console.log("state", this.state);
     return (
       <Background>
         {this.state.redirectHome ? <Redirect to="./" /> : ""}

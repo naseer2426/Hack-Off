@@ -27,22 +27,24 @@ class Game extends Component {
     this.setWinStatus = this.setWinStatus.bind(this);
     this.setGlobalBoardState = this.setGlobalBoardState.bind(this);
     this.decrementCount = this.decrementCount.bind(this);
+    this.setLeftState = this.setLeftState.bind(this);
+
     if (props.location.socket) {
       socket = props.location.socket;
     } else {
       // NOTE: remember to set this to true
       redirectHome = true;
     }
-    // cons;
+
     this.state = {
       redirectHome: redirectHome,
       playerId: socket.id,
       playerCharacter: props.location.playerCharacter,
       boardSquares: ["", "", "", "", "", "", "", "", ""],
       socket: socket,
-      rightDisplay: "Select Display",
+      rightStatus: "Select Display",
       language: "python",
-      rightDisplay: "Game Screen",
+      count: 0,
       buttonStyle: { borderColor: "white", fontSize: "1rem" },
       code: "",
       currentlyDisabled: true,
@@ -78,16 +80,17 @@ class Game extends Component {
       language: language
     });
   };
-  setRightDisplay = element => {
+  setRightStatus = element => {
     this.setState({
-      rightDisplay: element
+      rightStatus: element
     });
   };
+
   setGlobalBoardState = boardSquares => {
     this.setState({
       boardSquares: boardSquares
     });
-    console.log("this.props", this.props);
+
     var data = {
       gameId: this.props.location.gameId,
       move: boardSquares
@@ -125,46 +128,52 @@ class Game extends Component {
       });
       return;
     }
-    let compare = this.state.problem.output[0];
-    let resultTemp = result.stdout.trim().split("\n")[0];
+    // let compare = this.state.problem.output[0];
+    // let resultTemp = result.stdout.trim().split("\n")[0];
 
-    console.log("compare", compare);
-    console.log("result temp", resultTemp);
-    if (compare != resultTemp) {
-      console.log("output", result.stdout);
+    // if (compare !== resultTemp && compare !== 1) {
+
+    //   this.setState({
+    //     response: result,
+    //     leftStatus: "wrongAnswer",
+    //     output: result.stdout
+    //   });
+    //   return;
+    // }
+    if (this.state.difficulty === "easy") {
       this.setState({
-        response: result,
-        leftStatus: "wrongAnswer",
-        output: result.stdout
+        count: this.state.count + 1
       });
-      return;
-    }
-    if (this.state.difficulty == "easy") {
+    } else if (this.state.difficulty === "medium") {
       this.setState({
-        count: 1
-      });
-    } else if (this.state.difficulty == "medium") {
-      this.setState({
-        count: 2
+        count: this.state.count + 2
       });
     }
-    if (this.state.difficulty == "hard") {
+    if (this.state.difficulty === "hard") {
       this.setState({
-        count: 3
+        count: this.state.count + 3
       });
     }
     this.setState({
       response: result,
       leftStatus: "correctAnswer",
       output: result.stdout,
+      rightStatus: "",
       currentlyDisabled: false
+    });
+  };
+  setLeftState = leftStatus => {
+    this.setState({
+      leftStatus: leftStatus
     });
   };
 
   decrementCount = () => {
-    if (this.state.count == 1) {
+    if (this.state.count === 1) {
       this.setState({
-        currentlyDisabled: true
+        currentlyDisabled: true,
+        rightStatus: "",
+        leftStatus: "pickQuestion"
       });
     }
     this.setState({
@@ -215,7 +224,7 @@ class Game extends Component {
                   className="bg-transparent"
                   style={this.state.buttonStyle}
                 >
-                  {this.state.rightDisplay}
+                  {this.state.rightStatus}
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
@@ -224,7 +233,7 @@ class Game extends Component {
                       <Dropdown.Item
                         key={"Option" + index}
                         onClick={() => {
-                          this.setRightDisplay(val);
+                          this.setRightStatus(val);
                         }}
                       >
                         {val}
@@ -256,7 +265,6 @@ class Game extends Component {
     return (
       <Col style={{ overflowY: "scroll" }}>
         {this.leftHeader()}
-        {/* <Row style={{ height: this.state.height * 0.05 }} /> */}
 
         <TextEditor
           mode={this.state.language}
@@ -288,9 +296,7 @@ class Game extends Component {
   successMessage = () => {
     return (
       <Col>
-        {this.leftHeader()}
         {this.verticalAlignLeft()}
-
         <Row>
           <Container className="text-center">
             <Row>
@@ -306,11 +312,12 @@ class Game extends Component {
                   variant="success"
                   onClick={() => {
                     this.setState({
-                      leftStatus: "pickQuestion"
+                      leftStatus: "",
+                      rightStatus: "Game Screen"
                     });
                   }}
                 >
-                  Pick Next Question{" "}
+                  Play Move{" "}
                 </Button>
               </Container>
             </Row>
@@ -340,7 +347,7 @@ class Game extends Component {
       this.setState({
         problem: problem,
         leftStatus: "texteditor",
-        rightDisplay: "Problem Statement"
+        rightStatus: "Problem Statement"
       });
     });
   };
@@ -361,7 +368,6 @@ class Game extends Component {
                 className="bg-transparent"
                 style={this.buttonStyle}
                 onClick={() => this.selectDifficulty("easy")}
-                style={{ fontSize: "1.5rem" }}
               >
                 Easy
               </Button>
@@ -370,7 +376,6 @@ class Game extends Component {
                 className="bg-transparent"
                 style={this.buttonStyle}
                 onClick={() => this.selectDifficulty("medium")}
-                style={{ fontSize: "1.5rem" }}
               >
                 Medium
               </Button>
@@ -379,7 +384,6 @@ class Game extends Component {
                 className="bg-transparent"
                 style={this.buttonStyle}
                 onClick={() => this.selectDifficulty("hard")}
-                style={{ fontSize: "1.5rem" }}
               >
                 Hard
               </Button>
@@ -507,7 +511,11 @@ class Game extends Component {
   };
 
   gameDisplay = () => {
-    return (
+    let result = [];
+    if (!this.state.currentlyDisabled) {
+      result.push(<Col xs={3}></Col>);
+    }
+    result.push(
       <Col>
         <Container>
           <Jumbotron
@@ -535,8 +543,16 @@ class Game extends Component {
                     player={this.state.playerCharacter}
                     setGlobalBoardState={this.setGlobalBoardState}
                     disabled={this.state.currentlyDisabled}
+                    // disabled={false}
+                    setLeftState={this.setLeftState}
                     decrementCount={this.decrementCount}
                   />
+                </Container>
+              </Row>
+              <Row>
+                <Container className="text-center">
+                  <h5>Number of moves:</h5>
+                  {this.state.count}
                 </Container>
               </Row>
             </Container>
@@ -544,13 +560,14 @@ class Game extends Component {
         </Container>
       </Col>
     );
+    return result;
   };
 
   decideRightColumn = () => {
-    if (this.state.rightDisplay == "Problem Statement") {
+    if (this.state.rightStatus === "Problem Statement") {
       return this.problemStatementTile();
     }
-    if (this.state.rightDisplay == "Game Screen") {
+    if (this.state.rightStatus === "Game Screen") {
       return this.gameDisplay();
     }
   };
@@ -621,7 +638,6 @@ class Game extends Component {
   };
 
   render() {
-    console.log("to be shared", this.state.boardSquares);
     return (
       <Background overflow="hidden">
         {this.state.redirectHome ? <Redirect to="/" /> : ""}
